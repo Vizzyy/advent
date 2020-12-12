@@ -1,0 +1,100 @@
+from copy import copy
+
+with open('./input.txt', 'r') as file:
+    inputs = file.readlines()
+
+# print(inputs)
+
+sanitized_inputs = []
+
+for num in inputs:
+    temp = [letter for letter in num.replace("\n", "").replace("L", "#")]
+    sanitized_inputs.append(temp)
+
+# [print(''.join(x)) for x in sanitized_inputs]
+# print()
+row_len = len(sanitized_inputs[0])
+col_len = len(sanitized_inputs)
+print(f"row_len: {row_len} - col_len: {col_len}")
+
+
+def occupied_adjacents(x, y, state):
+    # print(f"incoming loc: {x}, {y}")
+    adj_occupied = 0
+    adj_empty = 0
+    adjacent_seats = [(x - 1, y - 1),
+                      (x, y - 1),
+                      (x + 1, y - 1),
+                      (x - 1, y),
+                      (x + 1, y),
+                      (x - 1, y + 1),
+                      (x, y + 1),
+                      (x + 1, y + 1)]
+    # print(adjacent_seats)
+    for seat in adjacent_seats:
+        # print(f"seat: {seat}")
+        if 0 <= seat[0] < row_len and 0 <= seat[1] < col_len:
+            row = state[seat[1]]
+            # print(row)
+            # print(f"row: {row} - seat: {seat}")
+            spot = row[seat[0]]
+            # print(f"spot: {spot}, seat: {seat}")
+            if spot == "#":
+                # print(f"row: {''.join(row)} - spot: {spot}, seat: {seat}")
+                adj_occupied += 1
+            elif spot == 'L' or spot == '.':
+                adj_empty += 1
+        else:
+            adj_empty += 1
+    # print(f"x: {x}, y: {y}, adj count: {adj_occupied}")
+    return adj_occupied, adj_empty
+
+
+translations = 0
+
+new_state = copy(sanitized_inputs)
+[print(''.join(x)) for x in new_state]
+print()
+while True:
+    temp_state = copy(new_state)  # the one we alter per loop of While
+    # [print(''.join(x)) for x in temp_state]
+    # print()
+    for y in range(len(new_state)):
+        row = new_state[y]
+        new_row = copy(row)
+        for x in range(len(row)):
+            seat = new_row[x]
+            if new_row[x] == '.':
+                continue
+
+            adj_state = occupied_adjacents(x, y, new_state)
+            if new_row[x] == "#" and adj_state[0] >= 4:
+                # new_row = copy(row)
+                new_row[x] = "L"
+                temp_state[y] = new_row
+                # print(''.join(new_row))
+                # new_state[y] = new_row
+                # print(f"old: {row} - new {new_state[y]}")
+                translations += 1
+            elif new_row[x] == "L" and adj_state[1] == 8:
+                new_row[x] = "#"
+                temp_state[y] = new_row
+                # print(''.join(new_row))
+                translations += 1
+        # break
+
+    if translations == 0:
+        break
+    else:
+        new_state = copy(temp_state)
+        print(f"translations: {translations}")
+        [print(''.join(x)) for x in new_state]
+        print()
+        translations = 0
+
+print()
+print("Finished State:")
+[print(''.join(x)) for x in temp_state]
+
+one_dimensional = ''.join(str(item) for innerlist in temp_state for item in innerlist)
+print(f"Occupied Seats: {one_dimensional.count('#')}")
