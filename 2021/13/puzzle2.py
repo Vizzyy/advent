@@ -81,3 +81,44 @@ for row in result_paper:
             count_dots += 1
 
 print(count_dots)
+
+# result_paper = fold_left(result_paper.copy(), 5)
+#
+# [print(line) for line in result_paper]
+# print()
+
+# fold along y=447
+result_paper = fold_up(result_paper.copy(), 447)
+
+# fold along x=327
+result_paper = fold_left(result_paper.copy(), 327)
+
+# fold along y=223
+result_paper = fold_up(result_paper.copy(), 223)
+
+# fold along x=163
+result_paper = fold_left(result_paper.copy(), 163)
+
+# fold along y=111
+result_paper = fold_up(result_paper.copy(), 111)
+
+# fold along x=81
+result_paper = fold_left(result_paper.copy(), 81)
+
+# fold along y=55
+result_paper = fold_up(result_paper.copy(), 55)
+
+# fold along x=40
+result_paper = fold_left(result_paper.copy(), 40)
+
+# fold along y=27
+result_paper = fold_up(result_paper.copy(), 27)
+
+# fold along y=13
+result_paper = fold_up(result_paper.copy(), 13)
+
+# fold along y=6
+result_paper = fold_up(result_paper.copy(), 6)
+
+[print(line) for line in result_paper]
+print()
