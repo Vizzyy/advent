@@ -6,6 +6,7 @@ xs, instructions = inputs.split('\n\n')
 xs = xs.split('\n')[:-1]
 grid = []
 for x in xs:
+    # split up rows into chunks of 4 chars representing one column each
     tenp = [x[i:i+4].strip() for i in range(0, len(x), 4)]
     grid.append(tenp)
 
