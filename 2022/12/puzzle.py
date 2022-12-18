@@ -1,3 +1,7 @@
+import datetime
+
+start = datetime.datetime.now()
+
 with open('input.txt', 'r') as file:
     grid = file.read()
 grid = [[*row] for row in grid.strip().split('\n')]
@@ -141,3 +145,5 @@ if DEBUG:
 
 print()
 print(f'{path_to_final}, {len(path_to_final)}')
+print(f'elapsed: {datetime.datetime.now() - start}')
+# elapsed: 0:00:57.230956
