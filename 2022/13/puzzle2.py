@@ -1,5 +1,6 @@
 import datetime
 import ast
+import functools
 
 start = datetime.datetime.now()
 
@@ -58,17 +59,33 @@ def is_in_right_order(left_input, right_input):
     return True
 
 
-packet_index = 1
-correct_packets = []
+full_packets = []
 for left, right in inputs:
-    print(f'== Pair {packet_index} ==')
-    correct = is_in_right_order(left, right)
-    if correct:
-        correct_packets.append(packet_index)
-    packet_index += 1
-    print(f'[main] - {correct}\n')
+    full_packets.append(left.copy())
+    full_packets.append(right.copy())
 
-print(correct_packets)
-print(sum(correct_packets))
+full_packets.append([[2]])
+full_packets.append([[6]])
+
+
+def compare(a, b):
+    if is_in_right_order(a.copy(), b.copy()):
+        return 1
+    else:
+        return -1
+
+
+compare_key = functools.cmp_to_key(compare)
+sorted_packets = sorted(full_packets, key=compare_key, reverse=True)
+
+# print()
+# [print(line) for line in full_packets]
+print()
+[print(line) for line in sorted_packets]
+
+packet_1 = sorted_packets.index([[6]]) + 1
+packet_2 = sorted_packets.index([[2]]) + 1
+
+print(f'\n{packet_1 * packet_2}')
 
 print(f'elapsed: {datetime.datetime.now() - start}')
