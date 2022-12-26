@@ -17,6 +17,9 @@ grid = [['.'] * grid_size for i in range(grid_size)]
 sand_start = [0, 500]
 stop_objects = ['o', '#']
 DEPTH_MAX = 200
+max_printing_depth = 0
+min_printing_col = 800
+max_printing_col = 0
 
 
 def get_line_points(start, end):
@@ -49,9 +52,9 @@ def print_grid(rows_to_print, col_min, col_max):
     print()
     column_range = list(range(col_min, col_max + 1))
     columns = '      ' + ''.join([f'{str(index)[1:3]} ' for index in column_range])
-    print(columns)
+    # print(columns)
     for i in range(rows_to_print):
-        row = '  '.join(grid[i][column_range[0]:column_range[-1]])
+        row = ''.join(grid[i][column_range[0]:column_range[-1]])
         print(f'[{i:3}] {row}')
 
 
@@ -72,8 +75,12 @@ def find_diagonal_left(sand_pos):
                     if grid[sand_pos[0] + down_depth][sand_pos[1] - left_depth] not in stop_objects:
                         down_depth += 1
                     else:
-                        print(f'Reached a depth: {sand_pos[0] + down_depth - 1}')
-                        break
+                        
+                        # run it again after reached new depth
+                        sand_pos = position_assessment([sand_pos.copy()[0] + (down_depth - 1), sand_pos.copy()[1] - left_depth])
+                        if sand_pos:
+                            print(f'Reached a depth: {sand_pos[0] + down_depth - 1}. Returning: {sand_pos}')
+                        return sand_pos
                 if down_depth == DEPTH_MAX:
                     break
 
@@ -106,8 +113,13 @@ def find_diagonal_right(sand_pos):
                     if grid[sand_pos[0] + down_depth][sand_pos[1] + right_depth] not in stop_objects:
                         down_depth += 1
                     else:
-                        print(f'Reached a depth: {sand_pos[0] + down_depth - 1}')
-                        break
+                        
+                        # run it again after reached new depth
+                        sand_pos = position_assessment([sand_pos.copy()[0] + (down_depth - 1), sand_pos.copy()[1] + right_depth])
+                        if sand_pos:
+                            print(f'Reached a depth: {sand_pos[0] + down_depth - 1}. Returning: {sand_pos}')
+                        return sand_pos
+                        # break
 
             right_depth += 1
         elif down_depth > 1:
@@ -121,14 +133,48 @@ def find_diagonal_right(sand_pos):
     return None
 
 
+def position_assessment(observer):
+    global max_printing_col, max_printing_depth, min_printing_col
+    print(f'[position_assessment]: {observer}')
+    # but diagonal left is available
+    if left_option := find_diagonal_left(observer.copy()):
+        print(f'[position_assessment] - left_option: {left_option}')
+
+        max_printing_depth = max(max_printing_depth, left_option[0])
+        min_printing_col = min(min_printing_col, left_option[1])
+        max_printing_col = max(max_printing_col, left_option[1])
+        return left_option
+    elif left_option is None:
+        return None
+
+    # left is unavailable, but diagonal right is available
+    if right_option := find_diagonal_right(observer.copy()):
+        print(f'[position_assessment] - right_option: {right_option}')
+
+        max_printing_depth = max(max_printing_depth, right_option[0])
+        min_printing_col = min(min_printing_col, right_option[1])
+        max_printing_col = max(max_printing_col, right_option[1])
+        return right_option
+    elif right_option is None:
+        return None
+
+    # neither side is available, so build up
+    else:
+        print('[position_assessment] - neither side is available, taking observer position (middle)')
+
+        max_printing_depth = max(max_printing_depth, observer[0])
+        min_printing_col = min(min_printing_col, observer[1])
+        max_printing_col = max(max_printing_col, observer[1])
+        return observer.copy()
+
+
+
 round_num = 1
 rounds = 25
 units_at_rest = 0
 global_break = False
-round_limit = 61
-max_printing_depth = 0
-min_printing_col = 800
-max_printing_col = 0
+round_limit = 2320
+
 while not global_break and round_num <= round_limit:
     print(f'\n[Round {round_num}]')
     sand = sand_start.copy()
@@ -144,62 +190,17 @@ while not global_break and round_num <= round_limit:
 
             # if next spot is going to be an obstacle
             else:
-
-                """ 
-                ############## ASSESSMENT BLOCK ##############
-                TODO below needs to be pulled out into it's own function, to be called here and any time a block falls
-                after having diagonally traversed either direction (recursively), and then returning the final 
-                position back up the chain of calls 
-                """
-
-                print('Next spot is going to be an obstacle...')
-                # but diagonal left is available
-                if left_option := find_diagonal_left(sand.copy()):
-                    print(f'left_option: {left_option}')
-                    grid[left_option[0]][left_option[1]] = 'o'
-                    units_at_rest += 1
-
-                    max_printing_depth = max(max_printing_depth, left_option[0])
-                    min_printing_col = min(min_printing_col, left_option[1])
-                    max_printing_col = max(max_printing_col, left_option[1])
-                    break
-                elif left_option is None:
+                if (final_position := position_assessment(sand.copy())) is None:
                     global_break = True
                     break
-
-                # left is unavailable, but diagonal right is available
-                if right_option := find_diagonal_right(sand.copy()):
-                    print(f'right_option: {right_option}')
-                    grid[right_option[0]][right_option[1]] = 'o'
-                    units_at_rest += 1
-
-                    max_printing_depth = max(max_printing_depth, right_option[0])
-                    min_printing_col = min(min_printing_col, right_option[1])
-                    max_printing_col = max(max_printing_col, right_option[1])
-                    break
-                elif right_option is None:
-                    global_break = True
-                    break
-
-                # neither side is available, so build up
-                else:
-                    print('neither side is available, take observing position (middle)')
-                    grid[sand[0]][sand[1]] = 'o'
-                    units_at_rest += 1
-
-                    max_printing_depth = max(max_printing_depth, sand[0])
-                    min_printing_col = min(min_printing_col, sand[1])
-                    max_printing_col = max(max_printing_col, sand[1])
-                    break
-
-                # once the above is pulled out , all we should need here is something like this:
-                #
-                # final_position = position_assessment(incoming_sand_position)
-                # grid[final_position[0]][final_position[1]] = 'o'
-                # units_at_rest += 1
+                
+                grid[final_position[0]][final_position[1]] = 'o'
+                units_at_rest += 1
+                break
 
         except IndexError:
             print(f'Reached end of grid')
+            break
 
         failsafe -= 1
 
