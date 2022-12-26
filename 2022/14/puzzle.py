@@ -20,6 +20,10 @@ DEPTH_MAX = 200
 max_printing_depth = 0
 min_printing_col = 800
 max_printing_col = 0
+round_num = 1
+units_at_rest = 0
+global_break = False
+round_limit = 766
 
 
 def get_line_points(start, end):
@@ -52,10 +56,15 @@ def print_grid(rows_to_print, col_min, col_max):
     print()
     column_range = list(range(col_min, col_max + 1))
     columns = '      ' + ''.join([f'{str(index)[1:3]} ' for index in column_range])
-    # print(columns)
-    for i in range(rows_to_print):
-        row = ''.join(grid[i][column_range[0]:column_range[-1]])
+    print(columns)
+
+    # min_rows = 0
+    # rows_to_print = 170
+    min_rows = max(0, rows_to_print - 30)
+    for i in range(min_rows, rows_to_print):
+        row = '  '.join(grid[i][column_range[0]:column_range[-1]])
         print(f'[{i:3}] {row}')
+    print(columns)
 
 
 def find_diagonal_left(sand_pos):
@@ -75,7 +84,6 @@ def find_diagonal_left(sand_pos):
                     if grid[sand_pos[0] + down_depth][sand_pos[1] - left_depth] not in stop_objects:
                         down_depth += 1
                     else:
-                        
                         # run it again after reached new depth
                         sand_pos = position_assessment([sand_pos.copy()[0] + (down_depth - 1), sand_pos.copy()[1] - left_depth])
                         if sand_pos:
@@ -113,7 +121,6 @@ def find_diagonal_right(sand_pos):
                     if grid[sand_pos[0] + down_depth][sand_pos[1] + right_depth] not in stop_objects:
                         down_depth += 1
                     else:
-                        
                         # run it again after reached new depth
                         sand_pos = position_assessment([sand_pos.copy()[0] + (down_depth - 1), sand_pos.copy()[1] + right_depth])
                         if sand_pos:
@@ -168,18 +175,11 @@ def position_assessment(observer):
         return observer.copy()
 
 
-
-round_num = 1
-rounds = 25
-units_at_rest = 0
-global_break = False
-round_limit = 2320
-
 while not global_break and round_num <= round_limit:
     print(f'\n[Round {round_num}]')
     sand = sand_start.copy()
 
-    failsafe = rounds * 10
+    failsafe = round_limit * 10
     while failsafe > 0 and not global_break:
         try:
             print(f'Observing from: {sand} ({grid[sand[0]][sand[1]]}) -> next = {grid[sand[0] + 1][sand[1]]}')
@@ -193,7 +193,7 @@ while not global_break and round_num <= round_limit:
                 if (final_position := position_assessment(sand.copy())) is None:
                     global_break = True
                     break
-                
+
                 grid[final_position[0]][final_position[1]] = 'o'
                 units_at_rest += 1
                 break
@@ -204,9 +204,11 @@ while not global_break and round_num <= round_limit:
 
         failsafe -= 1
 
-    print_grid(max_printing_depth + 5, min_printing_col - 5, max_printing_col + 5)
+    # print_grid(max_printing_depth + 5, min_printing_col - 5, max_printing_col + 5)
     round_num += 1
     # time.sleep(1)
+
+print_grid(max_printing_depth + 5, min_printing_col - 5, max_printing_col + 5)
 
 print(f'units_at_rest: {units_at_rest}')
 print(f'elapsed: {datetime.datetime.now() - start}')
