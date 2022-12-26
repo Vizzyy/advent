@@ -7,12 +7,13 @@ start = datetime.datetime.now()
 with open('input.txt', 'r') as file:
     inputs = file.read()
 
-inputs = [[[int(part) for part in pair.split(',')] for pair in line.split(' -> ')] for line in inputs.strip().split('\n')]
+inputs = [[[int(part) for part in pair.split(',')] for pair in line.split(' -> ')] for line in
+          inputs.strip().split('\n')]
 # [print(line) for line in inputs]
 
 
 grid_size = 1000
-grid = [['.']*grid_size for i in range(grid_size)]
+grid = [['.'] * grid_size for i in range(grid_size)]
 sand_start = [0, 500]
 stop_objects = ['o', '#']
 DEPTH_MAX = 200
@@ -47,7 +48,7 @@ grid[sand_start[0]][sand_start[1]] = '+'
 def print_grid(rows_to_print, col_min, col_max):
     print()
     column_range = list(range(col_min, col_max + 1))
-    columns = '      '+''.join([f'{str(index)[1:3]} ' for index in column_range])
+    columns = '      ' + ''.join([f'{str(index)[1:3]} ' for index in column_range])
     print(columns)
     for i in range(rows_to_print):
         row = '  '.join(grid[i][column_range[0]:column_range[-1]])
@@ -143,8 +144,15 @@ while not global_break and round_num <= round_limit:
 
             # if next spot is going to be an obstacle
             else:
-                print('Next spot is going to be an obstacle...')
 
+                """ 
+                ############## ASSESSMENT BLOCK ##############
+                TODO below needs to be pulled out into it's own function, to be called here and any time a block falls
+                after having diagonally traversed either direction (recursively), and then returning the final 
+                position back up the chain of calls 
+                """
+
+                print('Next spot is going to be an obstacle...')
                 # but diagonal left is available
                 if left_option := find_diagonal_left(sand.copy()):
                     print(f'left_option: {left_option}')
@@ -184,6 +192,12 @@ while not global_break and round_num <= round_limit:
                     max_printing_col = max(max_printing_col, sand[1])
                     break
 
+                # once the above is pulled out , all we should need here is something like this:
+                #
+                # final_position = position_assessment(incoming_sand_position)
+                # grid[final_position[0]][final_position[1]] = 'o'
+                # units_at_rest += 1
+
         except IndexError:
             print(f'Reached end of grid')
 
@@ -193,7 +207,5 @@ while not global_break and round_num <= round_limit:
     round_num += 1
     # time.sleep(1)
 
-
 print(f'units_at_rest: {units_at_rest}')
 print(f'elapsed: {datetime.datetime.now() - start}')
-
