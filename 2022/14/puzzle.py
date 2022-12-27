@@ -61,8 +61,8 @@ def print_grid(rows_to_print, col_min, col_max):
     print(columns)
 
     # rows_to_print = 170
-    # min_rows = 0
-    min_rows = max(0, rows_to_print - 30)
+    min_rows = 0
+    # min_rows = max(0, rows_to_print - 30)
     for i in range(min_rows, rows_to_print):
         row = '  '.join(grid[i][column_range[0]:column_range[-1]])
         print(f'[{i:3}] {row}')
