@@ -1,6 +1,6 @@
-import re
+import regex as re
 
-with open('test.txt', 'r') as file:
+with open('input.txt', 'r') as file:
     inputs = file.read()
 
 inputs = inputs.strip().split('\n')
@@ -32,7 +32,7 @@ pattern = re.compile(pattern)
 # pattern.match(string)
 
 for line in inputs:
-    split = re.split(pattern,line) 
+    split = re.findall(pattern, line, overlapped=True) 
     split = [item for item in split if item != '']
     # print(split)
     first = None
