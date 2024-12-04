@@ -12,49 +12,41 @@ with open('input.txt', 'r') as file:
 
 inputs = inputs.strip().split('\n')
 
-# print(inputs)
-
 grid = [list(row) for row in inputs]
 grid_results = copy.copy(grid)
 grid_results = [['.' for col in row] for row in grid]
 
-
-# [print(row) for row in grid]
-
 appearances_count = 0
-directions = [
-    'top',
-    'bottom',
-    'left',
-    'right',
-    'top_left',
-    'top_right',
-    'bottom_left',
-    'bottom_right'
-]
 
 
-def attempt_consecutive_matches(grid, row, col, direction):
-    # assumes we pass in a location of X
+def attempt_consecutive_matches(grid, row, col):
+    # assumes we pass in a location of A
+    # grab all four diagonally adjacent letters
+    # return all letter locations (not required)
     xmas_locations = []
     args = (grid,row,col)
-    step_one = grid_helpers.function_map[direction](*args)
-#     print(f'step_one: {step_one}')
-    if step_one is not None and step_one['val'] == 'M':
-        args = (grid,step_one['loc'][0],step_one['loc'][1])
-        step_two = grid_helpers.function_map[direction](*args)
-#         print(f'step_two: {step_two}')
-        if step_two is not None and step_two['val'] == 'A':
-            args = (grid,step_two['loc'][0],step_two['loc'][1])
-            step_three = grid_helpers.function_map[direction](*args)
-#             print(f'step_three: {step_three}')
-            if step_three is not None and step_three['val'] == 'S':
-                xmas_locations = [
-                    [row,col],
-                    [step_one['loc'][0],step_one['loc'][1]],
-                    [step_two['loc'][0],step_two['loc'][1]],
-                    [step_three['loc'][0],step_three['loc'][1]]
-                ]
+    top_left = grid_helpers.function_map['top_left'](*args)
+    top_right = grid_helpers.function_map['top_right'](*args)
+    bottom_left = grid_helpers.function_map['bottom_left'](*args)
+    bottom_right = grid_helpers.function_map['bottom_right'](*args)
+
+    # check if:
+    # 1. all four locations are not None
+    # 2. the four locations are one of the four acceptable configurations (MS/MS, SS/MM, MM/SS, SM/SM)
+    if (top_left is not None and top_right is not None and bottom_left is not None and bottom_right is not None) and \
+        ((top_left['val'] == 'M' and top_right['val'] == 'M' and bottom_left['val'] == 'S' and bottom_right['val'] == 'S') \
+        or (top_left['val'] == 'M' and top_right['val'] == 'S' and bottom_left['val'] == 'M' and bottom_right['val'] == 'S') \
+        or (top_left['val'] == 'S' and top_right['val'] == 'M' and bottom_left['val'] == 'S' and bottom_right['val'] == 'M') \
+        or (top_left['val'] == 'S' and top_right['val'] == 'S' and bottom_left['val'] == 'M' and bottom_right['val'] == 'M')):
+
+        xmas_locations = [
+                        [row,col],
+                        [top_left['loc'][0],top_left['loc'][1]],
+                        [top_right['loc'][0],top_right['loc'][1]],
+                        [bottom_left['loc'][0],bottom_left['loc'][1]],
+                        [bottom_right['loc'][0],bottom_right['loc'][1]]
+        ]
+
     return xmas_locations
 
 
@@ -64,20 +56,21 @@ for row_idx in range(len(grid)):
     for col_idx in range(len(grid[row_idx])):
         letter = row[col_idx]
 
-        if letter == 'X':
-            for direction in directions:
-                matches = attempt_consecutive_matches(grid, row_idx, col_idx, direction)
-                if len(matches) > 0:
-                    appearances_count += 1
-#                     print(f'found {direction} matched word: {matches}')
-                    for location in matches:
-#                         print(f'location in matches: {location}')
-                        grid_results[location[0]][location[1]] = grid[location[0]][location[1]]
+        # check for permutations of the "cross" at every location of A
+        if letter == 'A':
+            matches = attempt_consecutive_matches(grid, row_idx, col_idx)
+            if len(matches) > 0:
+                appearances_count += 1
+                # update our result grid (matches visual example in problem description) (not required)
+                for location in matches:
+                    grid_results[location[0]][location[1]] = grid[location[0]][location[1]]
 
 
-# print()
-# [print(row) for row in grid_results]
-# print()
 print(appearances_count)
 
 print(f'\nCompletion time: {datetime.now() - startTime}')
+
+# Result:
+# 1888
+
+# Completion time: 0:00:00.017384
