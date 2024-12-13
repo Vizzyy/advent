@@ -73,7 +73,12 @@ while (True):
     # input()
 
 
-walked_map_locations = sum([row.count('X') for row in walked_map])
+walked_map_locations = [] #sum([row.count('X') for row in walked_map])
 
+
+for row in range(len(walked_map)):
+    for col in range(len(walked_map[row])):
+        if walked_map[row][col] == 'X':
+            walked_map_locations.append([row,col])
 
 print(walked_map_locations)

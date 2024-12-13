@@ -1,5 +1,6 @@
 from datetime import datetime
 import copy
+import json
 import sys
 sys.path.append('../../patterns')
 import grid_helpers
@@ -47,6 +48,8 @@ def test_obstacle(inner_lab_map, obstacle_y, obstacle_x, inner_guard_location):
 
     loop_check = 10
     previous_walked_count = 0
+
+    positions_walked = {}
     while (True):
 
         # mark current spot on walked map
@@ -76,18 +79,16 @@ def test_obstacle(inner_lab_map, obstacle_y, obstacle_x, inner_guard_location):
 
         inner_lab_map[inner_guard_location[0]][inner_guard_location[1]] = 'X'
 
-        walked_map_locations = sum([row.count('X') for row in inner_lab_map])
-        # print(f'walked_map_locations: {walked_map_locations}')
-        if walked_map_locations == previous_walked_count:
-            loop_check -= 1
-            # print(f'loop_check: {loop_check}')
-        
-        if loop_check == 0:
-            print(f'\Loop time: {datetime.now() - startTime}')
-            print(f'Found loopable obstruction @ [{obstacle_y}, {obstacle_x}]')
-            return True
+        # walked_map_locations = sum([row.count('X') for row in inner_lab_map])
+
+        composite_key = f'[{inner_guard_location[0]},{inner_guard_location[1]}]'
+        if composite_key not in positions_walked.keys():
+            positions_walked[composite_key] = [inner_guard_direction]
+        elif inner_guard_direction not in positions_walked[composite_key]:
+            positions_walked[composite_key].append(inner_guard_direction)
         else:
-            previous_walked_count = walked_map_locations
+            print(f'Found loopable obstruction @ [{obstacle_y}, {obstacle_x}] - {datetime.now() - startTime}')
+            return True
 
         # input()
 
@@ -98,24 +99,32 @@ def test_obstacle(inner_lab_map, obstacle_y, obstacle_x, inner_guard_location):
 
 count_loopable = 0
 
-for row in range(len(lab_map)):
-    # if row != 6:
-    #     print('skipping')
-    #     continue
-    for col in range(len(lab_map[row])):
-        # print(f'{row}, {col}')
-        # if input() != 'y':
-        #     continue
 
-        # if col != 3:
-        #     print('skipping')
-        #     continue
-        if lab_map[row][col] not in ['^']:
-            # print(f'test_obstacle outer: {row},{col}')
-            if test_obstacle(copy.deepcopy(lab_map), row, col, copy.deepcopy(guard_location)):
+with open('part_1_output.txt') as output:
+    spots_to_check = output.read()
+
+spots_to_check = json.loads(spots_to_check)
+
+# for row in range(len(lab_map)):
+#     for col in range(len(lab_map[row])):
+#         if lab_map[row][col] not in ['^', '#']:
+#             if test_obstacle(copy.deepcopy(lab_map), row, col, copy.deepcopy(guard_location)):
+#                 count_loopable += 1
+
+for spot in spots_to_check:
+    row = spot[0]
+    col = spot[1]
+    # print(f'checking [{row}, {col}]')
+    if test_obstacle(copy.deepcopy(lab_map), row, col, copy.deepcopy(guard_location)):
                 count_loopable += 1
 
 
 print(f'count_loopable: {count_loopable}')
 
 print(f'\nCompletion time: {datetime.now() - startTime}')
+
+# ...
+# Found loopable obstruction @ [126, 72] - 0:01:15.047933
+# count_loopable: 2008
+
+# Completion time: 0:01:15.048207
